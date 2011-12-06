@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+from optparse import OptionParser
+import inspect
+import traceback
+import yaml
+
+def run(path):
+    conf = yaml.load(open(path, 'r'))
+    for c in conf['plugins']:
+        klass = _reflect(c['type'])
+        args = c.get('args', [])
+        kwargs = c.get('kwargs', {})
+        plugin = klass(*args, **kwargs)
+        print plugin.__init__
+        print klass
+        print ('running %s ... ' % klass.__name__),
+        plugin.run()
+        print 'complete'
+
+def _reflect(klass):
+    if inspect.isclass(klass):
+        return klass
+    try:
+        s = klass.rsplit('.', 1)
+        if len(s) == 1:
+            m = 'cloudwatch'
+            k = s[0]
+        else:
+            m, k = s
+        packages = m.split('.')
+        module = __import__(m)
+        packages.pop(0)
+        while packages:
+            module = getattr(module, packages.pop(0))
+        return getattr(module, k)
+    except (AttributeError, ImportError):
+        traceback.print_exc()
+        raise
+    except:
+        traceback.print_exc()
+        raise
+
+if __name__ == '__main__':
+    usage = 'usage: %prog </path/to/cloudwatch.conf> [options]'
+    parser = OptionParser(usage)
+    options, args = parser.parse_args()
+
+    conf_path = args.pop(0) if args else 'cloudwatch.conf'
+    run(conf_path)
+    
