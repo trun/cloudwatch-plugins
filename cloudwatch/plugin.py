@@ -1,6 +1,5 @@
-from boto import connect_cloudwatch
+from boto import connect_cloudwatch, connect_ec2
 from datetime import datetime
-from urllib import quote_plus
 import requests
 
 UNITS = (
@@ -34,12 +33,19 @@ UNITS = (
 )
 
 class CloudWatchPlugin(object):
-    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None, namespace='AWS/EC2', dimensions=None):
+    def __init__(self, aws_access_key_id=None, aws_secret_access_key=None, namespace='EC2+', dimensions=None):
         self.conn = connect_cloudwatch(aws_access_key_id, aws_secret_access_key)
-        self.namespace = quote_plus(namespace)
+        self.namespace = namespace
         self.dimensions = dimensions or {}
-        self.dimensions['InstanceId'] = self.get_instance_id()
-        print 'Init plugin with InstanceId: ' + str(self.dimensions['InstanceId'])
+        self.dimensions.update(self.get_instance_dimensions())
+        print 'Init plugin with InstanceId: ' + str(self.dimensions.get('InstanceId', 'Unknown'))
+
+    def get_instance_dimensions(self):
+        dimensions = {}
+        instance_id = self.get_instance_id()
+        if instance_id:
+            dimensions['InstanceId'] = instance_id
+        return dimensions
 
     def get_instance_id(self):
         try:

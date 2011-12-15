@@ -1,6 +1,5 @@
 from cloudwatch.plugin import CloudWatchPlugin
 from subprocess import Popen, PIPE, STDOUT
-from datetime import datetime
 
 class MemoryPlugin(CloudWatchPlugin):
     def run(self):
@@ -16,4 +15,3 @@ class MemoryPlugin(CloudWatchPlugin):
         p = Popen(['free','-m'], stdout=PIPE, stderr=STDOUT)
         (stdout, stderr) = p.communicate()
         return stdout
-
