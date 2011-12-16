@@ -14,7 +14,8 @@ sdict = {
     'scripts': [ 'bin/cloudwatch-monitor'],
     'install_requires': [
         'boto >=2.1.1',
-        'requests >= 0.7.6',
+        'requests >=0.7.6',
+        'PyYAML >= 3.10',
     ],
 }
 
